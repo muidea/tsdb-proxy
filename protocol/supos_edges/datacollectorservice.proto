@@ -1,0 +1,144 @@
+syntax = "proto3";
+package supos.proto.collector.backend;
+import "supos.ai/data-lake/external/tsdb-proxy/common/model/value.proto";
+import "supos.ai/data-lake/external/tsdb-proxy/common/model/meta.proto";
+
+// 元数据操作
+enum MetaDataAction
+{
+    MetaDataAction_ADD = 0;
+    MetaDataAction_DELETE = 1;
+    MetaDataAction_MODIFY = 2;
+}
+
+message MetaDataOperation
+{
+    MetaDataAction action = 1;
+    string objectName = 2;
+    model.PropertyOrObject addOrModify = 3;
+}
+
+// 元数据操作的回应，暂空
+message MetaDataOperationResult
+{
+
+}
+
+// 属性操作请求，即单个属性操作的集合
+message MetaDataRequest
+{
+	string timestamp = 1;
+	string status  = 2;
+	int64 version = 3;
+    repeated MetaDataOperation operations = 4;    
+}
+
+message MetaDataResponse
+{
+    int32 errorCode = 1;
+    // repeated MetaDataOperationResult results = 1;
+}
+
+// 批量删除位号
+message DeleteTagRequest
+{
+    repeated string tags = 1;   // 位号名称
+}
+
+// 删除位号的回应，暂空
+message DeleteTagResponse
+{
+    int32 errorCode = 1;
+}
+
+// 更新位号实时值请求
+message UpdateTagValueRequest
+{
+    model.ValueSequnce values = 1;
+}
+
+// 更新位号实时值回应
+message UpdateTagValueResponse
+{
+    int32 errorCode = 1;
+}
+
+
+// 登陆请求
+message LoginRequest
+{
+  string authToken = 1;
+    string identifyID = 2;
+    string endpointName = 3;
+}
+
+// 登陆响应
+message LoginResponse
+{
+    int32 errorCode = 1;
+    string reason = 2;
+    string sessionID = 3;
+}
+
+
+message LogoutRequest
+{
+}
+
+message LogoutResponse
+{
+}
+
+message HeartBeatDataRequest
+{
+	string info = 1;
+}
+
+message HeartBeatDataResponse
+{
+	string info = 1;
+}
+
+message WriteValue
+{
+	model.ValueSequnce values = 1;
+}
+
+message UpChannel
+{
+	oneof cmd 
+	{
+		LoginRequest loginRequest = 1;
+        LogoutRequest logoutRequest = 2;
+	}
+}
+
+message StatusNotify
+{
+	int32 cmd = 1;
+}
+
+message DownChannel
+{
+	oneof cmd
+    {
+		StatusNotify statusNotify = 1;
+		LoginResponse loginResponse = 2;
+		LogoutResponse logoutResponse = 3;
+        WriteValue   writeValue = 4;
+    }
+}
+
+// service
+
+service DataCollectorService
+{
+    //rpc Login (LoginRequest) returns (LoginResponse);
+    //rpc Logout(google.protobuf.Empty) returns (google.protobuf.Empty);
+    rpc HeartBeatData(HeartBeatDataRequest) returns (HeartBeatDataResponse);
+    rpc DoMetaData(MetaDataRequest) returns (MetaDataResponse);
+    rpc DeleteTags(DeleteTagRequest) returns (DeleteTagResponse);
+    //rpc UpdateTagValue(UpdateTagValueRequest) returns (UpdateTagValueResponse);
+    rpc UpdateTagValue(stream model.ValueSequnce) returns (UpdateTagValueResponse);
+	rpc CollectorSerivceChannel(stream UpChannel) returns (stream DownChannel);
+}

@@ -1,0 +1,149 @@
+syntax = "proto3";
+package model;
+import "google/protobuf/type.proto";
+
+option go_package = "github.com/golang/protobuf/ptypes/any";
+
+message BinaryValue
+{
+    int32 subType = 1;
+    bytes data = 2;
+}
+
+message EmptyValue
+{
+}
+
+message NullValue
+{
+}
+
+message PrimitiveValue
+{
+    oneof value
+    {
+        int32  i32Value = 1;    // for i1, i2, i4
+        float  fltValue = 2;    // for float
+        double dblValue = 3;    // for double
+        bool   boolValue = 4;   // for bool
+        string strValue = 5;    // for string
+        int64  i64Value = 6;    // for i8
+        uint32 ui32Value = 7;   // for ui1, ui2, ui4
+        uint64 ui64Value = 8;  // for ui8, Date
+        BinaryValue binValue = 9; // for Binary
+        EmptyValue emptyValue = 241; // for DataType_Empty
+        NullValue nullValue = 242;  // for DataType_Null
+    }
+}
+
+message PrimitiveValueWithQT
+{
+    uint64  time = 1;
+    uint64  quality = 2;
+    uint64   status = 3;
+    PrimitiveValue value = 4;
+}
+
+message ArrayItemValue
+{
+    int32 index = 1;
+    oneof value
+    {
+        PrimitiveValueWithQT primitiveValue = 2;
+        ValueSequnce structValue = 3;
+    }
+}
+
+message ArrayValue
+{
+    repeated ArrayItemValue value = 1;
+}
+
+
+message ColumnItemValue
+{
+    string columnName = 1;
+    PrimitiveValue value = 2;
+}
+
+message RowValue
+{
+    repeated ColumnItemValue value = 1;
+}
+
+message KeyValue
+{
+    oneof value
+    {
+        int32  i32Value = 1;
+        string strValue = 2;
+        int64  i64Value = 3;
+        uint32 ui32Value = 4;
+        uint64 ui64Value = 5;
+    }
+}
+
+
+message UpdateValue
+{
+    KeyValue key = 1;
+    RowValue value = 2;
+}
+
+message TrunkTableValue
+{
+    repeated RowValue value = 1;
+}
+
+message RefreshTableValue
+{
+    repeated RowValue insertValue = 1;
+    repeated UpdateValue updateValue = 2;
+    repeated KeyValue deleteValue = 3;
+}
+
+message TableValue
+{
+    oneof value
+    {
+        TrunkTableValue trunkValue = 1;
+        RefreshTableValue refreshValue = 2;
+    }
+}
+
+message Value
+{
+    oneof kind
+    {
+        PrimitiveValue primitiveValue = 1;
+        PrimitiveValueWithQT primitiveValueWithQT = 2;  // for primitive data type
+        ValueSequnce structValue = 3; // for Struct data type
+        ArrayValue arrayValue = 4; // for Array data type
+        TableValue tableValue = 5; // for Table data type
+    }
+}
+
+message NamedValue
+{
+    string name = 1;
+    Value value = 2;
+    repeated google.protobuf.Option tags = 100;  // tags
+}
+
+message ValueSequnce
+{
+    repeated NamedValue value = 1;
+    repeated google.protobuf.Option options = 100;
+}
+
+message RtdValues
+{
+    uint64 timeStamp = 1;
+    ValueSequnce values = 2;
+}
+
+message RtdValue
+{
+    uint64 timeStamp = 1;
+    NamedValue value = 2;
+}

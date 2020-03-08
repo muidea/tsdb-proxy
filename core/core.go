@@ -10,57 +10,63 @@ import (
 )
 
 // New create new batis service
-func New(configFile string) (ret *Service, err error) {
-	cfgFile := model.ConfigInfo{}
-	err = cfgFile.Load(configFile)
-	if err != nil {
-		return
-	}
+func New(configFile string) (ret *Service) {
 
-	svr := &Service{dbInfoMap: map[string]database.DB{}}
-
-	for idx := range cfgFile.StdService {
-		info := cfgFile.StdService[idx]
-		_, ok := svr.dbInfoMap[info.Name]
-		if ok {
-			err = fmt.Errorf("duplicate database ,name:%s", info.Name)
-			return
-		}
-
-		svr.dbInfoMap[info.Name] = database.NewStd(info)
-	}
-
-	for idx := range cfgFile.StdService {
-		info := cfgFile.StdService[idx]
-		_, ok := svr.dbInfoMap[info.Name]
-		if ok {
-			err = fmt.Errorf("duplicate database ,name:%s", info.Name)
-			return
-		}
-
-		svr.dbInfoMap[info.Name] = database.NewStd(info)
-	}
-
-	ret = svr
+	ret = &Service{dbInfoMap: map[string]database.DB{}, configFile: configFile}
 
 	return
 }
 
 // Service core service
 type Service struct {
-	dbInfoMap map[string]database.DB
+	configFile string
+	dbInfoMap  map[string]database.DB
+}
+
+func (s *Service) loadCfg() (err error) {
+	cfgFile := model.ConfigInfo{}
+	err = cfgFile.Load(s.configFile)
+	if err != nil {
+		return
+	}
+
+	for idx := range cfgFile.StdService {
+		info := cfgFile.StdService[idx]
+		_, ok := s.dbInfoMap[info.Name]
+		if ok {
+			err = fmt.Errorf("duplicate database ,name:%s", info.Name)
+			return
+		}
+
+		s.dbInfoMap[info.Name] = database.NewStd(info)
+	}
+
+	for idx := range cfgFile.StdService {
+		info := cfgFile.StdService[idx]
+		_, ok := s.dbInfoMap[info.Name]
+		if ok {
+			err = fmt.Errorf("duplicate database ,name:%s", info.Name)
+			return
+		}
+
+		s.dbInfoMap[info.Name] = database.NewStd(info)
+	}
+
+	return
 }
 
 // Startup startup service
 func (s *Service) Startup(router engine.Router) (err error) {
-	pingRoute := engine.CreateRoute("/ping", "GET", s.pingHandle)
-	router.AddRoute(pingRoute)
-
 	queryRoute := engine.CreateRoute("/query", "GET", s.queryHandle)
 	router.AddRoute(queryRoute)
 
 	notifyRoute := engine.CreateRoute("/notify/:source", "POST", s.notifyHandle)
 	router.AddRoute(notifyRoute)
+
+	pingRoute := engine.CreateRoute("/ping", "GET", s.pingHandle)
+	router.AddRoute(pingRoute)
+
+	go s.timeCheck()
 
 	return
 }
@@ -78,5 +84,9 @@ func (s *Service) queryHandle(res http.ResponseWriter, req *http.Request) {
 }
 
 func (s *Service) notifyHandle(res http.ResponseWriter, req *http.Request) {
+
+}
+
+func (s *Service) timeCheck() {
 
 }

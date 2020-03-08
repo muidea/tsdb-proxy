@@ -1,0 +1,51 @@
+syntax = "proto3";
+package model;
+import "value.proto";
+
+message PropertyOrObject
+{
+    oneof filed
+    {
+        MetaProperty prop = 1;
+        MetaObject obj = 2;
+    }
+}
+
+message SpecItem
+{
+    string name = 1;
+    PrimitiveValue value = 2;
+}
+
+message PrimitiveTypeSpec
+{
+    repeated SpecItem items = 1;
+}
+
+message MetaProperty
+{
+    string name = 1;
+	string showName = 2;
+    string description = 3;
+	int64 version = 4;
+    string primitiveType = 5;
+    PrimitiveTypeSpec primitiveTypeSpec = 6;
+    bool logged = 7;
+    bool persisted = 8;
+    bool readonly = 9;
+    repeated PropertyOrObject field = 10;
+    Value defaultValue = 11;
+}
+
+message MetaObject
+{
+    string name = 1;
+    string showName = 2;
+    string description = 3;
+    int64 version=4;
+    string valueStream = 5;
+    string templateName = 6;
+    repeated string modelLabels = 7;
+    repeated PropertyOrObject field = 8;
+}
+

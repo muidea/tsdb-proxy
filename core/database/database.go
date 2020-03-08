@@ -1,8 +1,11 @@
 package database
 
+import "supos.ai/data-lake/external/tsdb-proxy/common/model"
+
 // DB database interface
 type DB interface {
-	LoadConfig() (err error)
+	Initialize(rtdService string) (err error)
+	Uninitialize()
 	QueryHistory() (err error)
-	UpdateValue() (err error)
+	UpdateValue(values *model.ValueSequnce) (err error)
 }

@@ -1,0 +1,11 @@
+syntax = "proto3";
+package model;
+import "value.proto";
+
+message UpdateTagValuePacketUDP
+{
+  string name = 1;
+  string identity = 2;
+  string token = 3;
+  ValueSequnce values = 4;
+}

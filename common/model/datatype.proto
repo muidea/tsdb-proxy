@@ -1,0 +1,23 @@
+syntax = "proto3";
+package model;
+
+enum DataType
+{
+    DataType_Empty = 0;
+    DataType_Null = 1;
+    DataType_I1 = 2;
+    DataType_I2 = 3;
+    DataType_I4 = 4;
+    DataType_I8 = 5;
+    DataType_Float = 6;
+    DataType_Double = 7;
+    DataType_UI1 = 8;
+    DataType_UI2 = 9;
+    DataType_UI4 = 10;
+    DataType_UI8 = 11;
+    DataType_Bool = 12;
+    DataType_String = 13;
+    DataType_Date = 14;         // uint64，从1970-1-1 00:00:00开始的毫秒数
+    DataType_Binary = 15;
+    DataType_Struct = 0xFF;
+}
