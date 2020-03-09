@@ -44,7 +44,7 @@ func (s *stdImpl) UpdateValue(res http.ResponseWriter, req *http.Request) (err e
 	return
 }
 
-func (s *stdImpl) CheckHealth() {
+func (s *stdImpl) TimerCheck() {
 
 }
 

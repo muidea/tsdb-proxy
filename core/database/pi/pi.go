@@ -20,12 +20,20 @@ type piImpl struct {
 	httpClient *http.Client
 	collector  collector.Collector
 
-	tagsInfo TagInfoList
+	statusValue int
+
+	curTagInfos map[string]*TagInfo
 }
 
 // NewPi new pi DB
 func NewPi(info *model.DBInfo, callBack string) database.DB {
-	return &piImpl{info: info, subscribeCallBack: callBack, httpClient: &http.Client{}}
+	return &piImpl{
+		info:              info,
+		subscribeCallBack: callBack,
+		httpClient:        &http.Client{},
+		statusValue:       database.Init,
+		curTagInfos:       map[string]*TagInfo{},
+	}
 }
 
 func (s *piImpl) Initialize(rtdService string) (err error) {
@@ -45,14 +53,74 @@ func (s *piImpl) QueryHistory(res http.ResponseWriter, req *http.Request) (err e
 }
 
 func (s *piImpl) UpdateValue(res http.ResponseWriter, req *http.Request) (err error) {
-	values := &pb.ValueSequnce{}
+	notify := &NotifyValuesData{}
+	err = net.ParseJSONBody(req, notify)
+	if err != nil {
+		return
+	}
+
+	values := &pb.ValueSequnce{Value: []*pb.NamedValue{}}
+	for _, val := range notify.Value {
+		tag, ok := s.curTagInfos[val.Name]
+		if !ok {
+			continue
+		}
+
+		nv := &pb.NamedValue{}
+		if !TagValue2NameValue(val, tag, nv) {
+			continue
+		}
+
+		values.Value = append(values.Value, nv)
+	}
 
 	err = s.collector.UpdateValue(values)
 	return
 }
 
-func (s *piImpl) CheckHealth() {
+func (s *piImpl) TimerCheck() {
+	if s.statusValue < database.LoginOK {
+		return
+	}
 
+	if s.statusValue < database.EnumTags {
+		tagList, tagErr := s.enumTags()
+		if tagErr != nil {
+			return
+		}
+
+		tags := map[string]*TagInfo{}
+		metas := []*pb.MetaProperty{}
+		for _, val := range tagList {
+			pro := &pb.MetaProperty{}
+			if !TagInfo2Property(val, pro) {
+				continue
+			}
+
+			tags[val.Name] = val
+			metas = append(metas, pro)
+		}
+
+		err := s.collector.UpdateMeta(metas)
+		if err == nil {
+			s.statusValue = database.EnumTags
+			s.curTagInfos = tags
+		}
+
+		return
+	}
+
+	if s.statusValue < database.Subscribed {
+		tags := []string{}
+		for k := range s.curTagInfos {
+			tags = append(tags, k)
+		}
+
+		err := s.subscribe(tags, s.subscribeCallBack)
+		if err == nil {
+			s.statusValue = database.Subscribed
+		}
+	}
 }
 
 func (s *piImpl) OnStatusCallBack(collectName string, status, errorCode int, reason string) {
@@ -60,6 +128,8 @@ func (s *piImpl) OnStatusCallBack(collectName string, status, errorCode int, rea
 		if s.collector.IsReady() {
 			values := &pb.ValueSequnce{}
 			s.collector.UpdateValue(values)
+
+			s.statusValue = database.LoginOK
 		}
 	}
 }

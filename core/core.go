@@ -131,12 +131,12 @@ func (s *Service) timeCheck() {
 	for {
 		select {
 		case <-timeOutTimer.C:
-			s.checkHealth()
+			s.checkDataBase()
 		}
 	}
 }
 
-func (s *Service) checkHealth() {
+func (s *Service) checkDataBase() {
 	url, _ := url.ParseRequestURI(s.bindAddress)
 	url.Path = strings.Join([]string{url.Path, "/ping"}, "")
 
@@ -150,6 +150,6 @@ func (s *Service) checkHealth() {
 	}
 
 	for _, v := range s.dbInfoMap {
-		v.CheckHealth()
+		v.TimerCheck()
 	}
 }
