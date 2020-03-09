@@ -6,6 +6,7 @@ import "supos.ai/data-lake/external/tsdb-proxy/common/model"
 type DB interface {
 	Initialize(rtdService string) (err error)
 	Uninitialize()
+
 	QueryHistory() (err error)
 	UpdateValue(values *model.ValueSequnce) (err error)
 }
