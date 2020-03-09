@@ -6,6 +6,8 @@ import (
 
 	engine "github.com/muidea/magicEngine"
 	"supos.ai/data-lake/external/tsdb-proxy/core/database"
+	"supos.ai/data-lake/external/tsdb-proxy/core/database/pi"
+	"supos.ai/data-lake/external/tsdb-proxy/core/database/std"
 	"supos.ai/data-lake/external/tsdb-proxy/model"
 )
 
@@ -38,18 +40,18 @@ func (s *Service) loadCfg() (err error) {
 			return
 		}
 
-		s.dbInfoMap[info.Name] = database.NewStd(info)
+		s.dbInfoMap[info.Name] = std.NewStd(info)
 	}
 
-	for idx := range cfgFile.StdService {
-		info := cfgFile.StdService[idx]
+	for idx := range cfgFile.PiService {
+		info := cfgFile.PiService[idx]
 		_, ok := s.dbInfoMap[info.Name]
 		if ok {
 			err = fmt.Errorf("duplicate database ,name:%s", info.Name)
 			return
 		}
 
-		s.dbInfoMap[info.Name] = database.NewStd(info)
+		s.dbInfoMap[info.Name] = pi.NewPi(info)
 	}
 
 	return

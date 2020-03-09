@@ -1,8 +1,9 @@
-package database
+package std
 
 import (
 	"supos.ai/data-lake/external/tsdb-proxy/collector"
 	pb "supos.ai/data-lake/external/tsdb-proxy/common/model"
+	"supos.ai/data-lake/external/tsdb-proxy/core/database"
 	"supos.ai/data-lake/external/tsdb-proxy/model"
 )
 
@@ -12,7 +13,7 @@ type stdImpl struct {
 }
 
 // NewStd new std DB
-func NewStd(info *model.DBInfo) DB {
+func NewStd(info *model.DBInfo) database.DB {
 	return &stdImpl{info: info}
 }
 
