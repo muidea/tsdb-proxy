@@ -19,18 +19,16 @@ func main() {
 	log.Println("TsDB-Proxy V1.0")
 
 	router := engine.NewRouter()
-	service, err := core.New(configFile)
 
+	service := core.New(configFile)
+	err := service.Startup(router)
 	if err == nil {
-		err = service.Startup(router)
-		if err == nil {
-			svr := engine.NewHTTPServer(bindPort)
-			svr.Bind(router)
+		svr := engine.NewHTTPServer(bindPort)
+		svr.Bind(router)
 
-			svr.Run()
+		svr.Run()
 
-			service.Teardown()
-		}
+		service.Teardown()
 	} else {
 		log.Printf("start service faield, err:%s", err.Error())
 	}
