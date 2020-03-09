@@ -1,0 +1,32 @@
+{
+    "stdService": [{
+            "name": "xxxx",
+            "description": "",
+            "address": "xxx",
+            "account": "",
+            "password": ""
+        },
+        {
+            "name": "xxxx",
+            "description": "",
+            "address": "xxx",
+            "account": "",
+            "password": ""
+        }
+    ],
+    "piService": [{
+            "name": "xxxx",
+            "description": "",
+            "address": "xxx",
+            "account": "",
+            "password": ""
+        },
+        {
+            "name": "xxxx",
+            "description": "",
+            "address": "xxx",
+            "account": "",
+            "password": ""
+        }
+    ]
+}
