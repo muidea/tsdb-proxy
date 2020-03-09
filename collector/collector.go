@@ -50,20 +50,17 @@ type Collector interface {
 
 	IsReady() bool
 
+	Offline()
 	UpdateValue(values *model.ValueSequnce) error
 	UpdateMeta(meta []*model.MetaProperty) error
 }
 
 // NewCollector 新建Collector
 func NewCollector(endPoint string) Collector {
-	snapshot := snapshot.New(endPoint)
 	fmt.Printf("new collect endpoint:%s", endPoint)
 
 	return &collector{
 		endPoint: endPoint,
-		status:   Init,
-		snapshot: snapshot,
-		metas:    make(map[string]*model.MetaProperty),
 	}
 }
 
@@ -84,6 +81,10 @@ func (s *collector) Name() string {
 }
 
 func (s *collector) Start(rtdService string, statusCallBack StatusCallBack) error {
+	s.snapshot = snapshot.New(s.endPoint)
+	s.status = Init
+	s.metas = make(map[string]*model.MetaProperty)
+
 	proxy := proxy.NewProxy(rtdService)
 
 	err := proxy.Start(s)
@@ -104,6 +105,12 @@ func (s *collector) Stop() {
 	if s.rtdProxy != nil {
 		s.rtdProxy.Stop()
 	}
+
+	s.snapshot = nil
+	s.status = Init
+	s.metas = nil
+	s.rtdProxy = nil
+	s.statusCallBack = nil
 }
 
 func (s *collector) IsReady() bool {
@@ -141,6 +148,33 @@ func (s *collector) Destroy() {
 	s.Stop()
 
 	s.snapshot = nil
+}
+
+func (s *collector) Offline() {
+	values := s.snapshot.GetAllCurrentTagValue()
+	if values != nil {
+		needSend := false
+		notifyVal := &model.ValueSequnce{Value: []*model.NamedValue{}}
+		for _, val := range values.GetValue() {
+			_, ok := val.GetValue().GetKind().(*model.Value_PrimitiveValueWithQT)
+			if ok {
+				vqtVal := val.Value.GetPrimitiveValueWithQT()
+				vqtVal.Status = 0x8000000000000000
+
+				tagName := val.GetName()
+				if tagName == "online" {
+					vqtVal.Value = &model.PrimitiveValue{Value: &model.PrimitiveValue_BoolValue{BoolValue: false}}
+				}
+
+				needSend = true
+				notifyVal.Value = append(notifyVal.Value, &model.NamedValue{Name: tagName, Value: &model.Value{Kind: &model.Value_PrimitiveValueWithQT{PrimitiveValueWithQT: vqtVal}}})
+			}
+		}
+
+		if needSend {
+			s.pushRtdData(notifyVal)
+		}
+	}
 }
 
 func (s *collector) UpdateMeta(meta []*model.MetaProperty) error {

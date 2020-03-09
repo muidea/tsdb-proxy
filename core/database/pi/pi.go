@@ -128,8 +128,11 @@ func (s *piImpl) TimerCheck() {
 
 	err := s.checkHealth()
 	if err != nil {
-		s.collector.Destroy()
+		s.collector.Offline()
+
+		s.statusValue = database.LoginOK
 	}
+
 }
 
 func (s *piImpl) OnStatusCallBack(collectName string, status, errorCode int, reason string) {
