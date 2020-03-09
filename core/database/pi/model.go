@@ -152,7 +152,15 @@ func TagInfo2Property(info *TagInfo, property *pb.MetaProperty) bool {
 }
 
 // TagValue2NameValue tagValue to NamedValue
-func TagValue2NameValue(val *TagValue, info *TagInfo, nv *pb.NamedValue) bool {
+func TagValue2NameValue(val *TagValue, info *TagInfo, nv *pb.NamedValue) (ret bool) {
+	ret = true
+
+	defer func() {
+		if err := recover(); err != nil {
+			ret = false
+		}
+	}()
+
 	pv := &pb.PrimitiveValue{}
 	switch info.Type {
 	case typeBool:
@@ -189,5 +197,5 @@ func TagValue2NameValue(val *TagValue, info *TagInfo, nv *pb.NamedValue) bool {
 				Value:   pv,
 			}}}
 
-	return true
+	return ret
 }
