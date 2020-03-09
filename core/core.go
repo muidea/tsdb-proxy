@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	engine "github.com/muidea/magicEngine"
@@ -13,17 +14,22 @@ import (
 )
 
 // New create new batis service
-func New(configFile string) (ret *Service) {
+func New(configFile, bindAddress string) (ret *Service) {
 
-	ret = &Service{dbInfoMap: map[string]database.DB{}, configFile: configFile}
+	ret = &Service{dbInfoMap: map[string]database.DB{}, configFile: configFile, bindAddress: bindAddress}
 
 	return
 }
 
 // Service core service
 type Service struct {
-	configFile string
-	dbInfoMap  map[string]database.DB
+	configFile  string
+	bindAddress string
+	dbInfoMap   map[string]database.DB
+}
+
+func (s *Service) constructCallBack(dbName string) string {
+	return strings.Join([]string{s.bindAddress, "notify", dbName}, "/")
 }
 
 func (s *Service) loadCfg() (err error) {
@@ -41,7 +47,7 @@ func (s *Service) loadCfg() (err error) {
 			return
 		}
 
-		s.dbInfoMap[info.Name] = std.NewStd(info)
+		s.dbInfoMap[info.Name] = std.NewStd(info, s.constructCallBack(info.Name))
 	}
 
 	for idx := range cfgFile.PiService {
@@ -52,7 +58,7 @@ func (s *Service) loadCfg() (err error) {
 			return
 		}
 
-		s.dbInfoMap[info.Name] = pi.NewPi(info)
+		s.dbInfoMap[info.Name] = pi.NewPi(info, s.constructCallBack(info.Name))
 	}
 
 	return

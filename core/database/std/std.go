@@ -8,13 +8,15 @@ import (
 )
 
 type stdImpl struct {
-	info      *model.DBInfo
+	info              *model.DBInfo
+	subscribeCallBack string
+
 	collector collector.Collector
 }
 
 // NewStd new std DB
-func NewStd(info *model.DBInfo) database.DB {
-	return &stdImpl{info: info}
+func NewStd(info *model.DBInfo, callBack string) database.DB {
+	return &stdImpl{info: info, subscribeCallBack: callBack}
 }
 
 func (s *stdImpl) Initialize(rtdService string) (err error) {

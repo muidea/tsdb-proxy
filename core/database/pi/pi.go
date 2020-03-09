@@ -14,7 +14,9 @@ import (
 )
 
 type piImpl struct {
-	info       *model.DBInfo
+	info              *model.DBInfo
+	subscribeCallBack string
+
 	httpClient *http.Client
 	collector  collector.Collector
 
@@ -22,8 +24,8 @@ type piImpl struct {
 }
 
 // NewPi new pi DB
-func NewPi(info *model.DBInfo) database.DB {
-	return &piImpl{info: info, httpClient: &http.Client{}}
+func NewPi(info *model.DBInfo, callBack string) database.DB {
+	return &piImpl{info: info, subscribeCallBack: callBack, httpClient: &http.Client{}}
 }
 
 func (s *piImpl) Initialize(rtdService string) (err error) {
