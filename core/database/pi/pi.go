@@ -120,6 +120,13 @@ func (s *piImpl) TimerCheck() {
 		if err == nil {
 			s.statusValue = database.Subscribed
 		}
+
+		return
+	}
+
+	err := s.checkHealth()
+	if err != nil {
+		s.collector.Destroy()
 	}
 }
 
