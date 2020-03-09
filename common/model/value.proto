@@ -2,8 +2,6 @@ syntax = "proto3";
 package model;
 import "google/protobuf/type.proto";
 
-option go_package = "github.com/golang/protobuf/ptypes/any";
-
 message BinaryValue
 {
     int32 subType = 1;
