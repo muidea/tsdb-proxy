@@ -40,11 +40,13 @@ func (s *piImpl) Uninitialize() {
 	s.collector.Stop()
 }
 
-func (s *piImpl) QueryHistory() (err error) {
+func (s *piImpl) QueryHistory(res http.ResponseWriter, req *http.Request) (err error) {
 	return
 }
 
-func (s *piImpl) UpdateValue(values *pb.ValueSequnce) (err error) {
+func (s *piImpl) UpdateValue(res http.ResponseWriter, req *http.Request) (err error) {
+	values := &pb.ValueSequnce{}
+
 	err = s.collector.UpdateValue(values)
 	return
 }

@@ -1,6 +1,8 @@
 package std
 
 import (
+	"net/http"
+
 	"supos.ai/data-lake/external/tsdb-proxy/collector"
 	pb "supos.ai/data-lake/external/tsdb-proxy/common/model"
 	"supos.ai/data-lake/external/tsdb-proxy/core/database"
@@ -32,17 +34,18 @@ func (s *stdImpl) Uninitialize() {
 
 }
 
-func (s *stdImpl) QueryHistory() (err error) {
+func (s *stdImpl) QueryHistory(res http.ResponseWriter, req *http.Request) (err error) {
+	return
+}
+
+func (s *stdImpl) UpdateValue(res http.ResponseWriter, req *http.Request) (err error) {
+	values := &pb.ValueSequnce{}
+	err = s.collector.UpdateValue(values)
 	return
 }
 
 func (s *stdImpl) CheckHealth() {
 
-}
-
-func (s *stdImpl) UpdateValue(values *pb.ValueSequnce) (err error) {
-	err = s.collector.UpdateValue(values)
-	return
 }
 
 func (s *stdImpl) OnStatusCallBack(collectName string, status, errorCode int, reason string) {

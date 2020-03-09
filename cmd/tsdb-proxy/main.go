@@ -35,7 +35,7 @@ func main() {
 	}
 
 	service := core.New(configFile, bindAddress)
-	err := service.Startup(router)
+	err := service.Startup(router, rtdService)
 	if err == nil {
 		svr := engine.NewHTTPServer(bindPort)
 		svr.Bind(router)

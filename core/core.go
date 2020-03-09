@@ -2,7 +2,10 @@ package core
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"net/url"
+	"path"
 	"strings"
 	"time"
 
@@ -65,7 +68,19 @@ func (s *Service) loadCfg() (err error) {
 }
 
 // Startup startup service
-func (s *Service) Startup(router engine.Router) (err error) {
+func (s *Service) Startup(router engine.Router, rtdService string) (err error) {
+	err = s.loadCfg()
+	if err != nil {
+		return
+	}
+
+	for _, v := range s.dbInfoMap {
+		err = v.Initialize(rtdService)
+		if err != nil {
+			return
+		}
+	}
+
 	queryRoute := engine.CreateRoute("/query", "GET", s.queryHandle)
 	router.AddRoute(queryRoute)
 
@@ -89,13 +104,26 @@ func (s *Service) pingHandle(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusNoContent)
 }
 
-// from client
+// from influx client
 func (s *Service) queryHandle(res http.ResponseWriter, req *http.Request) {
+	dbName := req.URL.Query().Get("db")
+	db, ok := s.dbInfoMap[dbName]
+	if ok {
+		db.QueryHistory(res, req)
+	} else {
+		log.Printf("invalid database, name:%s", dbName)
+	}
 }
 
-// from database
+// from database call back
 func (s *Service) notifyHandle(res http.ResponseWriter, req *http.Request) {
-
+	_, dbName := path.Split(req.URL.Path)
+	db, ok := s.dbInfoMap[dbName]
+	if ok {
+		db.UpdateValue(res, req)
+	} else {
+		log.Printf("invalid database, name:%s", dbName)
+	}
 }
 
 func (s *Service) timeCheck() {
@@ -109,6 +137,18 @@ func (s *Service) timeCheck() {
 }
 
 func (s *Service) checkHealth() {
+	url, _ := url.ParseRequestURI(s.bindAddress)
+	url.Path = strings.Join([]string{url.Path, "/ping"}, "")
+
+	httpClient := &http.Client{}
+	response, responseErr := httpClient.Get(url.String())
+	if responseErr != nil {
+		return
+	}
+	if response.StatusCode != http.StatusNoContent {
+		return
+	}
+
 	for _, v := range s.dbInfoMap {
 		v.CheckHealth()
 	}
