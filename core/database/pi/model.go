@@ -3,7 +3,7 @@ package pi
 // Result result
 type Result struct {
 	ErrorCode int    `json:"errorCode"`
-	Result    string `json:"result"`
+	Reason    string `json:"reason"`
 }
 
 // TagInfo tag info
@@ -77,4 +77,15 @@ type QueryData struct {
 type QueryResult struct {
 	Result
 	Data QueryData `json:"data"`
+}
+
+// CheckHealthData check health data
+type CheckHealthData struct {
+	Status int `json:"status"`
+}
+
+// CheckHealthResult check health result
+type CheckHealthResult struct {
+	Result
+	Data CheckHealthData `json:"data"`
 }

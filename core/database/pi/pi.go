@@ -66,12 +66,12 @@ func (s *piImpl) enumTags() (ret TagInfoList, err error) {
 		return
 	}
 
-	if result.ErrorCode == 0 {
-		ret = result.Data.Tags
-	} else {
-		err = fmt.Errorf("enum tags failed, erro:%s", result.Result)
+	if result.ErrorCode != 0 {
+		err = fmt.Errorf("enum tags failed, erro:%s", result.Reason)
+		return
 	}
 
+	ret = result.Data.Tags
 	return
 }
 
@@ -87,7 +87,7 @@ func (s *piImpl) subscribe(tags []string, callBack string) (err error) {
 	}
 
 	if result.ErrorCode != 0 {
-		err = fmt.Errorf("subscribe failed, erro:%s", result.Result)
+		err = fmt.Errorf("subscribe failed, erro:%s", result.Reason)
 	}
 
 	return
@@ -105,7 +105,7 @@ func (s *piImpl) unsubscribe(tags []string, callBack string) (err error) {
 	}
 
 	if result.ErrorCode != 0 {
-		err = fmt.Errorf("unsubscribe failed, erro:%s", result.Result)
+		err = fmt.Errorf("unsubscribe failed, erro:%s", result.Reason)
 	}
 
 	return
@@ -123,14 +123,34 @@ func (s *piImpl) queryHistory(beginTime, endTime string, valueCount int, tags []
 	}
 
 	if result.ErrorCode != 0 {
-		err = fmt.Errorf("query history failed, erro:%s", result.Result)
-	} else {
-		ret = result.Data.Values
+		err = fmt.Errorf("query history failed, erro:%s", result.Reason)
+		return
 	}
+
+	ret = result.Data.Values
 
 	return
 }
 
-func (s *piImpl) checkHealth() {
+func (s *piImpl) checkHealth() (err error) {
+	url, _ := url.ParseRequestURI(s.info.Address)
+	url.Path = strings.Join([]string{url.Path, "/ishealth"}, "")
 
+	result := &CheckHealthResult{}
+	_, err = net.HTTPGet(s.httpClient, url.String(), result)
+	if err != nil {
+		return
+	}
+
+	if result.ErrorCode != 0 {
+		err = fmt.Errorf("check health failed, erro:%s", result.Reason)
+		return
+	}
+
+	if result.Data.Status != 0 {
+		err = fmt.Errorf("check health failed, invalid status:%d", result.Data.Status)
+		return
+	}
+
+	return
 }
