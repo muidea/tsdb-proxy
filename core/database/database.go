@@ -9,4 +9,5 @@ type DB interface {
 
 	QueryHistory() (err error)
 	UpdateValue(values *model.ValueSequnce) (err error)
+	CheckHealth()
 }

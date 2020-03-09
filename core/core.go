@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	engine "github.com/muidea/magicEngine"
 	"supos.ai/data-lake/external/tsdb-proxy/core/database"
@@ -82,13 +83,27 @@ func (s *Service) pingHandle(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusNoContent)
 }
 
+// from client
 func (s *Service) queryHandle(res http.ResponseWriter, req *http.Request) {
 }
 
+// from database
 func (s *Service) notifyHandle(res http.ResponseWriter, req *http.Request) {
 
 }
 
 func (s *Service) timeCheck() {
+	timeOutTimer := time.NewTicker(5 * time.Second)
+	for {
+		select {
+		case <-timeOutTimer.C:
+			s.checkHealth()
+		}
+	}
+}
 
+func (s *Service) checkHealth() {
+	for _, v := range s.dbInfoMap {
+		v.CheckHealth()
+	}
 }

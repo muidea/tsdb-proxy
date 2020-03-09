@@ -47,6 +47,10 @@ func (s *piImpl) UpdateValue(values *pb.ValueSequnce) (err error) {
 	return
 }
 
+func (s *piImpl) CheckHealth() {
+
+}
+
 func (s *piImpl) OnStatusCallBack(collectName string, status, errorCode int, reason string) {
 	if status == collector.LoginStatus {
 		if s.collector.IsReady() {

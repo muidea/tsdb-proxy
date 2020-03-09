@@ -34,6 +34,10 @@ func (s *stdImpl) QueryHistory() (err error) {
 	return
 }
 
+func (s *stdImpl) CheckHealth() {
+
+}
+
 func (s *stdImpl) UpdateValue(values *pb.ValueSequnce) (err error) {
 	err = s.collector.UpdateValue(values)
 	return
