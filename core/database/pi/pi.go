@@ -49,6 +49,8 @@ func (s *piImpl) Uninitialize() {
 }
 
 func (s *piImpl) QueryHistory(res http.ResponseWriter, req *http.Request) (err error) {
+	// influx query -> pi-webapi query
+	// TODO
 	return
 }
 
