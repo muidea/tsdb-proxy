@@ -1,32 +1,17 @@
 {
-    "stdService": [{
-            "name": "xxxx",
-            "description": "",
-            "address": "xxx",
-            "account": "",
-            "password": ""
-        },
-        {
-            "name": "xxxx",
-            "description": "",
-            "address": "xxx",
-            "account": "",
-            "password": ""
-        }
-    ],
+    "stdService": [],
     "piService": [{
-            "name": "xxxx",
-            "description": "",
-            "address": "xxx",
-            "account": "",
-            "password": ""
-        },
-        {
-            "name": "xxxx",
-            "description": "",
-            "address": "xxx",
-            "account": "",
-            "password": ""
+            "name": "pi001",
+            "description": "pi001",
+            "address": "http://192.168.11.224:8086",
+            "account": "pi001",
+            "password": "pi001"
+        },{
+            "name": "pi002",
+            "description": "pi002",
+            "address": "http://192.168.11.224:8087",
+            "account": "pi002",
+            "password": "pi002"
         }
     ]
 }

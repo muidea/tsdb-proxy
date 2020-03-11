@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"net/url"
 	"path"
 	"strings"
 	"time"
@@ -32,7 +31,7 @@ type Service struct {
 }
 
 func (s *Service) constructCallBack(dbName string) string {
-	return strings.Join([]string{s.bindAddress, "notify", dbName}, "/")
+	return strings.Join([]string{"http:/", s.bindAddress, "notify", dbName}, "/")
 }
 
 func (s *Service) loadCfg() (err error) {
@@ -119,11 +118,18 @@ func (s *Service) queryHandle(res http.ResponseWriter, req *http.Request) {
 func (s *Service) notifyHandle(res http.ResponseWriter, req *http.Request) {
 	_, dbName := path.Split(req.URL.Path)
 	db, ok := s.dbInfoMap[dbName]
+
+	var err error
 	if ok {
-		db.UpdateValue(res, req)
-	} else {
-		log.Printf("invalid database, name:%s", dbName)
+		err = db.UpdateValue(res, req)
+		if err == nil {
+			res.WriteHeader(http.StatusOK)
+			return
+		}
 	}
+
+	log.Printf("invalid database, name:%s", dbName)
+	res.WriteHeader(http.StatusNotFound)
 }
 
 func (s *Service) timeCheck() {
@@ -137,11 +143,10 @@ func (s *Service) timeCheck() {
 }
 
 func (s *Service) checkDataBase() {
-	url, _ := url.ParseRequestURI(s.bindAddress)
-	url.Path = strings.Join([]string{url.Path, "/ping"}, "")
+	bindURL := strings.Join([]string{"http://", s.bindAddress, "/ping"}, "")
 
 	httpClient := &http.Client{}
-	response, responseErr := httpClient.Get(url.String())
+	response, responseErr := httpClient.Get(bindURL)
 	if responseErr != nil {
 		return
 	}

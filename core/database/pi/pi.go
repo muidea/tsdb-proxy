@@ -2,6 +2,7 @@ package pi
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -55,9 +56,11 @@ func (s *piImpl) QueryHistory(res http.ResponseWriter, req *http.Request) (err e
 }
 
 func (s *piImpl) UpdateValue(res http.ResponseWriter, req *http.Request) (err error) {
+	log.Printf("UpdateValue ....")
 	notify := &NotifyValuesData{}
 	err = net.ParseJSONBody(req, notify)
 	if err != nil {
+		err = nil
 		return
 	}
 
@@ -76,7 +79,7 @@ func (s *piImpl) UpdateValue(res http.ResponseWriter, req *http.Request) (err er
 		values.Value = append(values.Value, nv)
 	}
 
-	err = s.collector.UpdateValue(values)
+	s.collector.UpdateValue(values)
 	return
 }
 
