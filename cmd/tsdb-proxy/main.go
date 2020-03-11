@@ -9,9 +9,9 @@ import (
 	"supos.ai/data-lake/external/tsdb-proxy/core"
 )
 
-var bindAddress = "127.0.0.1:8080"
-var rtdService = "127.0.0.1:8010"
-var configFile = "config.json"
+var bindAddress = "192.168.11.240:8080"
+var rtdService = "192.168.11.155:8010"
+var configFile = "config/config.json"
 
 func main() {
 	flag.StringVar(&bindAddress, "BindAddress", bindAddress, "bind address.")
